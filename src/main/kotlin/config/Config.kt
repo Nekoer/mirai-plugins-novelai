@@ -6,9 +6,53 @@ import net.mamoe.mirai.console.data.ValueName
 import net.mamoe.mirai.console.data.value
 
 object Config : AutoSavePluginConfig("config") {
-    @ValueName("prompt")
-    @ValueDescription("词条")
-    var prompt: String by value()
+    @ValueName("mode")
+    @ValueDescription("模式，仅限image2image")
+    var mode:Int by value(0)
+
+    @ValueName("initImgWithMask")
+    @ValueDescription("[暂时不清楚该填什么]原始图蒙版模式，仅限image2image")
+    var initImgWithMask:Int by value(-1)
+
+    @ValueName("initImgInPaint")
+    @ValueDescription("[暂时不清楚该填什么]原始图图层，仅限image2image")
+    var initImgInPaint:Int by value(-1)
+
+    @ValueName("initMaskInPaint")
+    @ValueDescription("[暂时不清楚该填什么]原始蒙版图层，仅限image2image")
+    var initMaskInPaint:Int by value(-1)
+
+    @ValueName("maskMode")
+    @ValueDescription("蒙版模式，仅限image2image,[Upload mask|Draw mask]")
+    var maskMode:String by value("Draw mask")
+
+    @ValueName("maskBlur")
+    @ValueDescription("模糊遮罩滤镜，仅限image2image")
+    var maskBlur:Int by value(4)
+
+    @ValueName("inPaintingFill")
+    @ValueDescription("修复填充，仅限image2image，[fill|original|latent noise|latent nothing]")
+    var inPaintingFill:String by value("original")
+
+    @ValueName("resizeMode")
+    @ValueDescription("尺寸调整模式，仅限image2image [Crop and resize|Just resize|Resize and fill]")
+    var resizeMode:String by value("Just resize")
+
+    @ValueName("inPaintFullRes")
+    @ValueDescription("尺寸调整模式，仅限image2image")
+    var inPaintFullRes:Boolean by value(false)
+
+    @ValueName("inPaintFullResPadding")
+    @ValueDescription("图层全分辨率填充，仅限image2image")
+    var inPaintFullResPadding:Int by value(32)
+
+    @ValueName("inPaintingMaskInvert")
+    @ValueDescription("图层模板倒置，仅限image2image,[Inpaint not masked|Inpaint masked]")
+    var inPaintingMaskInvert:String by value("Inpaint masked")
+
+    @ValueName("translated")
+    @ValueDescription("翻译词条")
+    var translated: Boolean by value(true)
 
     @ValueName("negativePrompt")
     @ValueDescription("过滤词条")
@@ -27,7 +71,7 @@ object Config : AutoSavePluginConfig("config") {
     var steps: Int by value(40)
 
     @ValueName("samplerIndex")
-    @ValueDescription("采样器索引,Euler a|Euler|LMS|Heun|DPM2|DPM2 a|DPM fast|DPM adaptive|LMS Karras|DPM2 Karras|DPM2 a Karras|DDIM|PLMS")
+    @ValueDescription("采样器索引,Euler a|Euler|LMS|Heun|DPM2|DPM2 a|DPM fast|DPM adaptive|LMS Karras|DPM2 Karras|DPM2 a Karras|DDIM|PLMS, 图片转图片[Euler a|Euler|LMS|Heun|DPM2|DPM2 a|LMS Karras|DPM2 Karras|DPM2 a Karras|DDIM]")
     var samplerIndex: String by value("Euler a")
 
     @ValueName("restoreFaces")

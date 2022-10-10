@@ -18,6 +18,7 @@ private fun Any?.toJsonElement(): JsonElement{
         // !!! key simply converted to string
         is Map<*, *> -> JsonObject(this.map { it.key.toString() to it.value.toJsonElement() }.toMap())
         // add custom convert
+        is Array<*> -> JsonArray(this.map { it.toJsonElement() })
         else -> throw Exception("不支持类型 ${this::class}=${this}}")
     }
 }

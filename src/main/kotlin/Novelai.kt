@@ -34,8 +34,12 @@ object Novelai : KotlinPlugin(
 
         globalEventChannel().subscribeGroupMessages  {
             content { message.contentToString().contains("/ai text ") } quoteReply {
-                Generate.register(message.contentToString().replace("/ai text ",""),event = this)
+                Generate.textRegister(message.contentToString().replace("/ai text ",""),event = this, translated = Config.translated)
             }
+            content { message.contentToString().contains("/ai image ") } quoteReply {
+                Generate.imageRegister(event = this, translated = Config.translated)
+            }
+
         }
     }
 }
