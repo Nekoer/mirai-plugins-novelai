@@ -1,6 +1,7 @@
 package com.hcyacg
 
 import com.hcyacg.config.Config
+import com.hcyacg.config.EhTagTranslationConfig
 import com.hcyacg.data.PostData
 import com.hcyacg.data.TranslateResult
 import kotlinx.coroutines.Dispatchers
@@ -13,19 +14,20 @@ import kotlinx.serialization.json.jsonPrimitive
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.lang.Character.UnicodeBlock
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
-object Generate {
-    var json = Json {
+
+public object Generate {
+    private var json: Json = Json {
         encodeDefaults = true
         ignoreUnknownKeys = true
         isLenient = false
@@ -35,9 +37,9 @@ object Generate {
     }
     private val client = OkHttpClient.Builder().connectTimeout(10, TimeUnit.MINUTES).readTimeout(10, TimeUnit.MINUTES).build()
     private val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    suspend fun textRegister(tags: String, translated: Boolean = false,event : GroupMessageEvent):Image {
+    public suspend fun textRegister(tags: String, translated: Boolean = false,event : GroupMessageEvent): MessageChain {
         var seed = "";
-        if (Config.seed == -1){
+        if (Config.seed == -1L){
             for (i in 0 until 10){
                 seed = seed.plus((0..9).random())
             }
@@ -47,11 +49,13 @@ object Generate {
 
 
         val randomString = (1..11)
-            .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
+            .map { _ -> kotlin.random.Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("");
 
-        val data = PostData(data = arrayOf(if(!translated && !isChinese(tags)) tags else tags.split(",").joinToString(",") { translate(it) },
+
+
+        val data = PostData(data = arrayOf(if(!translated) tags else tags.split(",").joinToString(",") {translate(it)},
             Config.negativePrompt,
             Config.promptStyle,
             Config.promptStyle2,
@@ -88,7 +92,7 @@ object Generate {
             "",""),fn_index=11,session_hash = randomString)
 
         val request = Request.Builder().apply {
-            url("http://127.0.0.1:7860/api/predict/")
+            url("${Config.stableDiffusionWebui}/api/predict/")
             post(json.encodeToString(PostData.serializer(),data).toRequestBody())
 //            post(json.encodeToString(data).toRequestBody())
             addHeader("content-type","application/json")
@@ -112,10 +116,10 @@ object Generate {
             toExternalResource.close()
         }
 
-        return image
+        return image.plus("\n").plus("seed: $seed")
     }
 
-    suspend fun imageRegister(translated: Boolean = false, event : GroupMessageEvent):Image{
+    public suspend fun imageRegister(translated: Boolean = false, event : GroupMessageEvent): MessageChain {
         val text = event.message.find { it is PlainText } as PlainText
         val tags = text.contentToString().replace("/ai image ","")
         val tmpImage = event.message.find { it is Image } as Image
@@ -131,7 +135,7 @@ object Generate {
 
 
         var seed = "";
-        if (Config.seed == -1){
+        if (Config.seed == -1L){
             for (i in 0 until 10){
                 seed = seed.plus((0..9).random())
             }
@@ -147,7 +151,7 @@ object Generate {
 
         val data = PostData(data = arrayOf(
             Config.mode,
-            if(!translated && !isChinese(tags)) tags else tags.split(",").joinToString(",") { translate(it) },
+            if(!translated) tags else tags.split(",").joinToString(",") { translate(it) },
             Config.negativePrompt,
             Config.promptStyle,
             Config.promptStyle2,
@@ -199,7 +203,7 @@ object Generate {
             "",""),fn_index=29,session_hash = randomString)
 
         val request = Request.Builder().apply {
-            url("http://127.0.0.1:7860/api/predict/")
+            url("${Config.stableDiffusionWebui}/api/predict/")
             post(json.encodeToString(PostData.serializer(),data).toRequestBody())
             addHeader("content-type","application/json")
         }.build()
@@ -221,10 +225,24 @@ object Generate {
             toExternalResource.close()
         }
 
-        return image
+        return image.plus("\n").plus("seed: $seed")
     }
 
-    private fun translate(text: String): String {
+    private fun translate(word: String): String {
+        for (translation in EhTagTranslationConfig.database.data) {
+            for ((name, tag) in translation.data) {
+                if (tag.name == word) return name
+            }
+        }
+        for (translation in EhTagTranslationConfig.database.data) {
+            for ((name, tag) in translation.data) {
+                if (tag.name.startsWith(word)) return name
+            }
+        }
+        return translateChinese(word)
+    }
+
+    private fun translateChinese(text: String): String {
         val request = Request.Builder().apply {
             url("https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=${text}")
             get()
@@ -236,12 +254,12 @@ object Generate {
 
     // 根据Unicode编码完美的判断中文汉字和符号
     private fun isChinese(c: Char): Boolean {
-        val ub = UnicodeBlock.of(c)
-        return ub == UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS || ub == UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS || ub == UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A || ub == UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B || ub == UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION || ub == UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS || ub == UnicodeBlock.GENERAL_PUNCTUATION
+        val ub = Character.UnicodeBlock.of(c)
+        return ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS || ub == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS || ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A || ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B || ub == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION || ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS || ub == Character.UnicodeBlock.GENERAL_PUNCTUATION
     }
 
     // 完整的判断中文汉字和符号
-    fun isChinese(strName: String): Boolean {
+    public fun isChinese(strName: String): Boolean {
         val ch = strName.toCharArray()
         for (i in ch.indices) {
             val c = ch[i]
@@ -253,7 +271,7 @@ object Generate {
     }
 
     // 只能判断部分CJK字符（CJK统一汉字）
-    fun isChineseByREG(str: String?): Boolean {
+    public fun isChineseByREG(str: String?): Boolean {
         if (str == null) {
             return false
         }
@@ -262,7 +280,7 @@ object Generate {
     }
 
     // 只能判断部分CJK字符（CJK统一汉字）
-    fun isChineseByName(str: String?): Boolean {
+    public fun isChineseByName(str: String?): Boolean {
         if (str == null) {
             return false
         }

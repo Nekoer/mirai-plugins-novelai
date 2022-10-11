@@ -3,6 +3,7 @@ package com.hcyacg.data
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
@@ -63,9 +64,9 @@ private fun JsonElement.toAnyOrNull():Any?{
     }
 }
 
-object AnyValueSerializer  : KSerializer<Any?> {
+public object AnyValueSerializer  : KSerializer<Any?> {
     private val delegateSerializer = JsonElement.serializer()
-    override val descriptor = delegateSerializer.descriptor
+    override val descriptor: SerialDescriptor = delegateSerializer.descriptor
     override fun serialize(encoder: Encoder, value: Any?) {
         encoder.encodeSerializableValue(delegateSerializer, value.toJsonElement())
     }
@@ -75,7 +76,7 @@ object AnyValueSerializer  : KSerializer<Any?> {
     }
 }
 @Serializable
-data class PostData(
+public data class PostData(
     val data: Array<@Serializable(with = AnyValueSerializer::class) Any?> = arrayOf(),
     val fn_index: Int = 11,
     val session_hash: String ="mqmlyym41fl"
