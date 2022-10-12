@@ -16,8 +16,10 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import net.mamoe.mirai.utils.MiraiLogger
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -35,6 +37,7 @@ public object Generate {
         prettyPrint = false
         useArrayPolymorphism = false
     }
+    private val logger = MiraiLogger.Factory.create(this::class)
     private val client = OkHttpClient.Builder().connectTimeout(10, TimeUnit.MINUTES).readTimeout(10, TimeUnit.MINUTES).build()
     private val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     public suspend fun textRegister(tags: String, translated: Boolean = false,event : GroupMessageEvent): MessageChain {
@@ -110,19 +113,22 @@ public object Generate {
         var file = base64?.replace("\r|\n", "");
         file = file?.trim();
 
-        val toExternalResource = Base64.getDecoder().decode(file).toExternalResource()
-        val image = toExternalResource.uploadAsImage(event.group)
-        withContext(Dispatchers.IO) {
-            toExternalResource.close()
-        }
+        if (null != file){
+            val toExternalResource = Base64.getDecoder().decode(file).toExternalResource()
+            val image = toExternalResource.uploadAsImage(event.group)
+            withContext(Dispatchers.IO) {
+                toExternalResource.close()
+            }
 
-        return image.plus("\n").plus("seed: $seed")
+            return image.plus("\n").plus("seed: $seed")
+        }
+        return PlainText("生成错误").toMessageChain()
     }
 
     public suspend fun imageRegister(translated: Boolean = false, event : GroupMessageEvent): MessageChain {
         val text = event.message.find { it is PlainText } as PlainText
         val tags = text.contentToString().replace("/ai image ","")
-        val tmpImage = event.message.find { it is Image } as Image
+        val tmpImage = event.message.find { it is Image } as Image? ?: return PlainText("请添加图片").toMessageChain()
         val url = tmpImage.queryUrl()
         val urlRequest = Request.Builder().apply {
             url(url)
@@ -218,14 +224,16 @@ public object Generate {
         }
         var file = base64?.replace("\r|\n", "");
         file = file?.trim();
+        if (null != file){
+            val toExternalResource = Base64.getDecoder().decode(file).toExternalResource()
+            val image = toExternalResource.uploadAsImage(event.group)
+            withContext(Dispatchers.IO) {
+                toExternalResource.close()
+            }
 
-        val toExternalResource = Base64.getDecoder().decode(file).toExternalResource()
-        val image = toExternalResource.uploadAsImage(event.group)
-        withContext(Dispatchers.IO) {
-            toExternalResource.close()
+            return image.plus("\n").plus("seed: $seed")
         }
-
-        return image.plus("\n").plus("seed: $seed")
+        return PlainText("生成错误").toMessageChain()
     }
 
     private fun translate(word: String): String {
@@ -243,13 +251,18 @@ public object Generate {
     }
 
     private fun translateChinese(text: String): String {
-        val request = Request.Builder().apply {
-            url("https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=${text}")
-            get()
-        }.build()
+        try{
+            val request = Request.Builder().apply {
+                url("https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=${text}")
+                get()
+            }.build()
 
-        val result = json.decodeFromString<TranslateResult>(client.newCall(request).execute().body!!.string())
-        return result.translateResult[0][0].tgt
+            val result = json.decodeFromString<TranslateResult>(client.newCall(request).execute().body!!.string())
+            return result.translateResult[0][0].tgt
+        }catch(e:Exception){
+            logger.error("调用有道翻译错误")
+            return ""
+        }
     }
 
     // 根据Unicode编码完美的判断中文汉字和符号

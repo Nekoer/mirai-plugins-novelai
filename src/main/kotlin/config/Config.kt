@@ -131,8 +131,8 @@ public object Config : AutoSavePluginConfig("config") {
     public var width: Int by value(512)
 
     @ValueName("enableHr")
-    @ValueDescription("未知")
-    public var enableHr: Boolean by value(true)
+    @ValueDescription("Highres.fix 渲染两次")
+    public var enableHr: Boolean by value(false)
 
     @ValueName("scaleLatent")
     @ValueDescription("潜在的尺度")
