@@ -85,9 +85,9 @@ public object Generate {
             false,
             null,
             "",
-            "Seed",
+            Config.xtype,
             Config.xvalues,
-            "Steps",
+            Config.ytype,
             Config.yvalues,
             Config.drawLegend,
             Config.keepRandomSeeds,
@@ -199,14 +199,14 @@ public object Generate {
             arrayOf("left","right","up", "down"),
             false,false,null,"","",64,
             "None",
-            "Seed",
+            Config.xtype,
             Config.xvalues,
-            "Steps",
+            Config.ytype,
             Config.yvalues,
             Config.drawLegend,
             Config.keepRandomSeeds,
             null,
-            "",""),fn_index=29,session_hash = randomString)
+            "",""),fn_index=31,session_hash = randomString)
 
         val request = Request.Builder().apply {
             url("${Config.stableDiffusionWebui}/api/predict/")

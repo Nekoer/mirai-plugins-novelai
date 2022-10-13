@@ -146,9 +146,17 @@ public object Config : AutoSavePluginConfig("config") {
     @ValueDescription("脚本,Prompt matrix|Prompts from file or textbox|X/Y plot")
     public var script:String by value("None")
 
+    @ValueName("xtype")
+    @ValueDescription("只有脚本选择X/Y plot后使用")
+    public var xtype:String by value("Seed")
+
     @ValueName("xvalues")
     @ValueDescription("只有脚本选择X/Y plot后使用，否则默认为\"\"")
     public var xvalues:String by value("")
+
+    @ValueName("ytype")
+    @ValueDescription("只有脚本选择X/Y plot后使用，否则默认为\"\"")
+    public var ytype:String by value("Nothing")
 
     @ValueName("yvalues")
     @ValueDescription("只有脚本选择X/Y plot后使用，否则默认为\"\"")
