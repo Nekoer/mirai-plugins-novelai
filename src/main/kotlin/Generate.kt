@@ -92,7 +92,7 @@ public object Generate {
             Config.drawLegend,
             Config.keepRandomSeeds,
             null,
-            "",""),fn_index=11,session_hash = randomString)
+            "",""),fn_index=Config.textFnIndex,session_hash = randomString)
 
         val request = Request.Builder().apply {
             url("${Config.stableDiffusionWebui}/api/predict/")
@@ -151,7 +151,7 @@ public object Generate {
 
 
         val randomString = (1..11)
-            .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
+            .map { kotlin.random.Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("");
 
@@ -190,14 +190,36 @@ public object Generate {
             Config.inPaintingMaskInvert,
             "",
             "",
-            "None",
+            "None",//34
+            "",
+            true,
+            true,
             "",
             "",
-            1,50,0,false,4,1,"",128,8,
+            true,
+            50,
+            true,
+            1,
+            0,
+            false,
+            4,
+            1,
+            "",
+            128,
+            8,
             arrayOf("left","right","up", "down"),
-            1,0.05,128,4,"fill",
+            1,
+            0.05,
+            128,
+            4,
+            "fill",
             arrayOf("left","right","up", "down"),
-            false,false,null,"","",64,
+            false,
+            false,
+            null,
+            "",
+            "",
+            64,
             "None",
             Config.xtype,
             Config.xvalues,
@@ -206,7 +228,7 @@ public object Generate {
             Config.drawLegend,
             Config.keepRandomSeeds,
             null,
-            "",""),fn_index=31,session_hash = randomString)
+            "",""),fn_index=Config.imageFnIndex,session_hash = randomString)
 
         val request = Request.Builder().apply {
             url("${Config.stableDiffusionWebui}/api/predict/")

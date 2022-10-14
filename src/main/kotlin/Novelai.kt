@@ -23,7 +23,7 @@ public object Novelai : KotlinPlugin(
     JvmPluginDescription(
         id = "com.hcyacg.novelai",
         name = "novelai",
-        version = "0.5.0",
+        version = "0.6.0",
     ) {
         author("Nekoer")
     }
