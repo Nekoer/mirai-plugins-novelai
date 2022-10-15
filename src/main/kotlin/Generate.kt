@@ -58,7 +58,8 @@ public object Generate {
 
 
 
-        val data = PostData(data = arrayOf(if(!translated) tags else tags.split(",").joinToString(",") {translate(it)},
+        val data = PostData(data = arrayOf(
+            if(!translated) tags else tags.split(",").joinToString(",") {translate(it)},
             Config.negativePrompt,
             Config.promptStyle,
             Config.promptStyle2,
@@ -77,9 +78,11 @@ public object Generate {
             Config.seedEnableExtras,
             Config.height,
             Config.width,
-            Config.enableHr,
-            Config.scaleLatent,
+            Config.enableHr,//
+//            0.7,
+//            Config.scaleLatent,
             Config.denoisingStrength,
+            0,0,
             Config.script,
             Config.putVariablePartsAtStartOfPrompt,
             false,
@@ -91,6 +94,7 @@ public object Generate {
             Config.yvalues,
             Config.drawLegend,
             Config.keepRandomSeeds,
+            false,
             null,
             "",""),fn_index=Config.textFnIndex,session_hash = randomString)
 
@@ -227,6 +231,7 @@ public object Generate {
             Config.yvalues,
             Config.drawLegend,
             Config.keepRandomSeeds,
+            false,
             null,
             "",""),fn_index=Config.imageFnIndex,session_hash = randomString)
 
@@ -273,17 +278,17 @@ public object Generate {
     }
 
     private fun translateChinese(text: String): String {
-        try{
+        return try{
             val request = Request.Builder().apply {
                 url("https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=${text}")
                 get()
             }.build()
 
             val result = json.decodeFromString<TranslateResult>(client.newCall(request).execute().body!!.string())
-            return result.translateResult[0][0].tgt
+            result.translateResult[0][0].tgt
         }catch(e:Exception){
             logger.error("调用有道翻译错误")
-            return ""
+            ""
         }
     }
 

@@ -23,7 +23,7 @@ public object Novelai : KotlinPlugin(
     JvmPluginDescription(
         id = "com.hcyacg.novelai",
         name = "novelai",
-        version = "0.6.0",
+        version = "0.7.0",
     ) {
         author("Nekoer")
     }
@@ -53,7 +53,6 @@ public object Novelai : KotlinPlugin(
             }
             content { message.contentToString().contains("/ai seed ") } quoteReply {
                 try {
-
                     Config.seed = message.contentToString().replace("/ai seed ","").toLong()
                     Config.save()
                     "随机数种子已经设置为${Config.seed}"
@@ -72,6 +71,17 @@ public object Novelai : KotlinPlugin(
                     e.printStackTrace()
                     "翻译已${if(Config.translated)"开启" else "关闭"}"
                 }
+            }
+            content { message.contentToString().contains("/ai url ") } quoteReply {
+                try{
+                    Config.stableDiffusionWebui = message.contentToString().replace("/ai url ","")
+                    Config.save()
+                    "源站已更改为${Config.stableDiffusionWebui}"
+                }catch (e:Exception){
+                    e.printStackTrace()
+                    "更改错误"
+                }
+
             }
         }
     }
