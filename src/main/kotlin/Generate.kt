@@ -61,30 +61,30 @@ public object Generate {
         val data = PostData(data = arrayOf(
             if(!translated) tags else tags.split(",").joinToString(",") {translate(it)},
             Config.negativePrompt,
-            Config.promptStyle,
-            Config.promptStyle2,
-            Config.steps,
-            Config.samplerIndex,
-            Config.restoreFaces,
-            Config.tiling,
-            Config.nIter,
-            Config.batchSize,
-            Config.cfgScale,
-            seed.toBigInteger(),
-            Config.subSeed,
-            Config.subSeedStrength,
-            Config.seedResizeFromH,
-            Config.seedResizeFromW,
-            Config.seedEnableExtras,
-            Config.height,
-            Config.width,
-            Config.enableHr,//
-//            0.7,
+            Config.promptStyle,//None
+            Config.promptStyle2,//None
+            Config.steps,//20
+            Config.samplerIndex,//Euler a
+            Config.restoreFaces,//false
+            Config.tiling,//false
+            Config.nIter,//1
+            Config.batchSize,//1
+            Config.cfgScale,//7
+            seed.toBigInteger(),//-1
+            Config.subSeed,//-1
+            Config.subSeedStrength,//0
+            Config.seedResizeFromH,//0
+            Config.seedResizeFromW,//0
+            Config.seedEnableExtras,//false
+            Config.height,//512
+            Config.width,//512
+            Config.enableHr,//false
 //            Config.scaleLatent,
-            Config.denoisingStrength,
-            0,0,
-            Config.script,
-            Config.putVariablePartsAtStartOfPrompt,
+            Config.denoisingStrength,//0.7
+            0,
+            0,
+            Config.script,//None
+            Config.putVariablePartsAtStartOfPrompt,//false
             false,
             null,
             "",
@@ -92,8 +92,8 @@ public object Generate {
             Config.xvalues,
             Config.ytype,
             Config.yvalues,
-            Config.drawLegend,
-            Config.keepRandomSeeds,
+            Config.drawLegend,//true
+            Config.keepRandomSeeds,//false
             false,
             null,
             "",""),fn_index=Config.textFnIndex,session_hash = randomString)
@@ -157,38 +157,38 @@ public object Generate {
             .joinToString("");
 
         val data = PostData(data = arrayOf(
-            Config.mode,
+            Config.mode,//0
             if(!translated) tags else tags.split(",").joinToString(",") { translate(it) },
             Config.negativePrompt,
-            Config.promptStyle,
-            Config.promptStyle2,
+            Config.promptStyle,//None
+            Config.promptStyle2,//None
             base64Image,//原始图片
-            if(Config.initImgWithMask == -1) null else Config.initImgWithMask,
-            if(Config.initImgInPaint == -1) null else Config.initImgWithMask,
-            if(Config.initMaskInPaint == -1) null else Config.initImgWithMask,
-            Config.maskMode,
-            Config.steps,
-            Config.samplerIndex,
-            Config.maskBlur,
-            Config.inPaintingFill,
-            Config.restoreFaces,
-            Config.tiling,
-            Config.nIter,
-            Config.batchSize,
-            Config.cfgScale,
-            Config.denoisingStrength,
-            seed.toBigInteger(),
-            Config.subSeed,
-            Config.subSeedStrength,
-            Config.seedResizeFromH,
-            Config.seedResizeFromW,
-            Config.seedEnableExtras,
-            Config.height,
-            Config.width,
-            Config.resizeMode,
-            Config.inPaintFullRes,
-            Config.inPaintFullResPadding,
-            Config.inPaintingMaskInvert,
+            if(Config.initImgWithMask == -1) null else Config.initImgWithMask,//null
+            if(Config.initImgInPaint == -1) null else Config.initImgWithMask,//null
+            if(Config.initMaskInPaint == -1) null else Config.initImgWithMask,//null
+            Config.maskMode,//Draw mask
+            Config.steps,//20
+            Config.samplerIndex,//Euler a
+            Config.maskBlur,//4
+            Config.inPaintingFill,//original
+            Config.restoreFaces,//false
+            Config.tiling,//false
+            Config.nIter,//1
+            Config.batchSize,//1
+            Config.cfgScale,//7
+            Config.denoisingStrength,//0.75
+            seed.toBigInteger(),//-1
+            Config.subSeed,//-1
+            Config.subSeedStrength,//0
+            Config.seedResizeFromH,//0
+            Config.seedResizeFromW,//0
+            Config.seedEnableExtras,//false
+            Config.height,//512
+            Config.width,//512
+            Config.resizeMode,//just resize
+            Config.inPaintFullRes,//false
+            Config.inPaintFullResPadding,//32
+            Config.inPaintingMaskInvert,//Inpaint masked
             "",
             "",
             "None",//34
@@ -222,12 +222,12 @@ public object Generate {
             "",
             64,
             "None",
-            Config.xtype,
+            Config.xtype,//seed
             Config.xvalues,
-            Config.ytype,
+            Config.ytype,//nothing
             Config.yvalues,
-            Config.drawLegend,
-            Config.keepRandomSeeds,
+            Config.drawLegend,//true
+            Config.keepRandomSeeds,//false
             false,
             null,
             "",""),fn_index=Config.imageFnIndex,session_hash = randomString)
