@@ -98,27 +98,24 @@ public object Generate {
             null,
             "",""),fn_index=Config.textFnIndex,session_hash = randomString)
 
-        val request = Request.Builder().apply {
+        var request = Request.Builder().apply {
             url("${Config.stableDiffusionWebui}/api/predict/")
             post(json.encodeToString(PostData.serializer(),data).toRequestBody())
-//            post(json.encodeToString(data).toRequestBody())
             addHeader("content-type","application/json")
-
         }.build()
         event.subject.sendMessage("请稍后,预计需要1分钟")
-        val response = client.newCall(request).execute()
+        var response = client.newCall(request).execute()
         val element = json.parseToJsonElement(response.body!!.string())
-        var base64 = element.jsonObject["data"]?.jsonArray?.get(0)?.jsonArray?.get(0)?.jsonPrimitive?.content
 
-        if (base64?.contains("data:") == true) {
-            val start: Int = base64.indexOf(",")
-            base64 = base64.substring(start + 1)
-        }
-        var file = base64?.replace("\r|\n", "");
-        file = file?.trim();
+        val name = element.jsonObject["data"]?.jsonArray?.get(0)?.jsonArray?.get(0)?.jsonObject?.get("name")?.jsonPrimitive?.content
+        request = Request.Builder().apply {
+            url("${Config.stableDiffusionWebui}/file=/$name")
+        }.build()
+        response = client.newCall(request).execute()
+        val byte = response.body?.bytes()
 
-        if (null != file){
-            val toExternalResource = Base64.getDecoder().decode(file).toExternalResource()
+        if (null != byte){
+            val toExternalResource = byte.toExternalResource()
             val image = toExternalResource.uploadAsImage(event.group)
             withContext(Dispatchers.IO) {
                 toExternalResource.close()
@@ -235,24 +232,23 @@ public object Generate {
             null,
             "",""),fn_index=Config.imageFnIndex,session_hash = randomString)
 
-        val request = Request.Builder().apply {
+        var request = Request.Builder().apply {
             url("${Config.stableDiffusionWebui}/api/predict/")
             post(json.encodeToString(PostData.serializer(),data).toRequestBody())
             addHeader("content-type","application/json")
         }.build()
         event.subject.sendMessage("请稍后,预计需要1分钟")
-        val response = client.newCall(request).execute()
+        var response = client.newCall(request).execute()
         val element = json.parseToJsonElement(response.body!!.string())
-        var base64 = element.jsonObject["data"]?.jsonArray?.get(0)?.jsonArray?.get(0)?.jsonPrimitive?.content
+        val name = element.jsonObject["data"]?.jsonArray?.get(0)?.jsonArray?.get(0)?.jsonObject?.get("name")?.jsonPrimitive?.content
+        request = Request.Builder().apply {
+            url("${Config.stableDiffusionWebui}/file=/$name")
+        }.build()
+        response = client.newCall(request).execute()
+        val byte = response.body?.bytes()
 
-        if (base64?.contains("data:") == true) {
-            val start: Int = base64.indexOf(",")
-            base64 = base64.substring(start + 1)
-        }
-        var file = base64?.replace("\r|\n", "");
-        file = file?.trim();
-        if (null != file){
-            val toExternalResource = Base64.getDecoder().decode(file).toExternalResource()
+        if (null != byte){
+            val toExternalResource = byte.toExternalResource()
             val image = toExternalResource.uploadAsImage(event.group)
             withContext(Dispatchers.IO) {
                 toExternalResource.close()
