@@ -31,11 +31,11 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
     - name: Build Plugin
-      uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+      uses: gradle/gradle-build-action@v2.3.2
       with:
         arguments: buildPlugin
     - name: Build Plugin Legacy
-      uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+      uses: gradle/gradle-build-action@v2.3.2
       with:
         arguments: buildPluginLegacy
     - name: Upload a Build Artifact
