@@ -47,7 +47,7 @@ public object  EhTagTranslationConfig{
                 BrowserUserAgent()
                 ContentEncoding
             }
-            var url = "https://github.com/EhTagTranslation/Database/releases/latest/download/db.text.json"
+            val url = "https://raw.fastgit.org/EhTagTranslation/DatabaseReleases/master/db.text.json"
             val statement: HttpResponse =
                 http.get(url)
             while (statement.isActive) {
@@ -55,13 +55,10 @@ public object  EhTagTranslationConfig{
                     database0.writeBytes(statement.readBytes())
                     break
                 } catch (_: SocketTimeoutException) {
-                    url = "https://raw.fastgit.org/EhTagTranslation/DatabaseReleases/master/db.text.json"
                     continue
                 } catch (_: ConnectTimeoutException) {
-                    url = "https://raw.fastgit.org/EhTagTranslation/DatabaseReleases/master/db.text.json"
                     continue
                 } catch (_: java.net.SocketException) {
-                    url = "https://raw.fastgit.org/EhTagTranslation/DatabaseReleases/master/db.text.json"
                     logger.warning("翻译词典下载失败，正在尝试重新下载")
                     continue
                 }
