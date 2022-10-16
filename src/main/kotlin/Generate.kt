@@ -276,7 +276,7 @@ public object Generate {
     private fun translateChinese(text: String): String {
         return try{
             val request = Request.Builder().apply {
-                url("https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=${text}")
+                url("https://fanyi.youdao.com/translate?&doctype=json&type=ZH_CN2EN&i=${text}")
                 get()
             }.build()
 
