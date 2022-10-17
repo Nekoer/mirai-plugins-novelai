@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.hcyacg"
-version = "0.7.2"
+version = "0.7.3"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")

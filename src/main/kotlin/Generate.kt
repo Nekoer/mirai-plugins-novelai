@@ -109,7 +109,7 @@ public object Generate {
 
         val name = element.jsonObject["data"]?.jsonArray?.get(0)?.jsonArray?.get(0)?.jsonObject?.get("name")?.jsonPrimitive?.content
         request = Request.Builder().apply {
-            url("${Config.stableDiffusionWebui}/file=/$name")
+            url("${Config.stableDiffusionWebui}/file=$name")
         }.build()
         response = client.newCall(request).execute()
         val byte = response.body?.bytes()
@@ -242,7 +242,7 @@ public object Generate {
         val element = json.parseToJsonElement(response.body!!.string())
         val name = element.jsonObject["data"]?.jsonArray?.get(0)?.jsonArray?.get(0)?.jsonObject?.get("name")?.jsonPrimitive?.content
         request = Request.Builder().apply {
-            url("${Config.stableDiffusionWebui}/file=/$name")
+            url("${Config.stableDiffusionWebui}/file=$name")
         }.build()
         response = client.newCall(request).execute()
         val byte = response.body?.bytes()
