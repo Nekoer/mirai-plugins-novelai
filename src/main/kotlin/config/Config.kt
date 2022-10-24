@@ -6,6 +6,17 @@ import net.mamoe.mirai.console.data.ValueName
 import net.mamoe.mirai.console.data.value
 
 public object Config : AutoSavePluginConfig("config") {
+    @ValueName("username")
+    @ValueDescription("登录用户名")
+    public var username :String by value()
+
+    @ValueName("password")
+    @ValueDescription("登录密码")
+    public var password :String by value()
+
+    @ValueName("owner")
+    @ValueDescription("管理员")
+    public var owner: MutableList<String> by value()
 
     @ValueName("stableDiffusionWebui")
     @ValueDescription("stable-diffusion-webui接口")
@@ -136,7 +147,7 @@ public object Config : AutoSavePluginConfig("config") {
     public var height: Int by value(512)
 
     @ValueName("width")
-    @ValueDescription("高度")
+    @ValueDescription("宽度")
     public var width: Int by value(512)
 
     @ValueName("enableHr")

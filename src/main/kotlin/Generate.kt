@@ -2,8 +2,10 @@ package com.hcyacg
 
 import com.hcyacg.config.Config
 import com.hcyacg.config.EhTagTranslationConfig
+import com.hcyacg.data.LocalCookieJar
 import com.hcyacg.data.PostData
 import com.hcyacg.data.TranslateResult
+import io.ktor.client.engine.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -20,9 +22,10 @@ import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.MiraiLogger
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.IOException
+import java.lang.RuntimeException
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
@@ -38,8 +41,48 @@ public object Generate {
         useArrayPolymorphism = false
     }
     private val logger = MiraiLogger.Factory.create(this::class)
-    private val client = OkHttpClient.Builder().connectTimeout(10, TimeUnit.MINUTES).readTimeout(10, TimeUnit.MINUTES).build()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.MINUTES)
+        .readTimeout(10, TimeUnit.MINUTES)
+        .cookieJar(LocalCookieJar())
+        .followRedirects(false)
+        .followSslRedirects(false)
+        .build()
     private val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+    private var cookie = ""
+    public fun loadCookie() {
+        if (Config.username.isNotBlank() && Config.password.isNotBlank()){
+            val body = FormBody.Builder()
+                .add("username",Config.username)
+                .add("password",Config.password).build()
+
+            val request = Request.Builder().apply {
+                url("${Config.stableDiffusionWebui}/login")
+                post(body)
+                addHeader("content-type","application/x-www-form-urlencoded")
+            }.build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    logger.warning(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val setCookie = response.headers("set-cookie")
+                    setCookie.onEach {
+                        if (it.contains("access-token")){
+                            cookie = it.substring(0,it.indexOf(";"))
+                            return@onEach
+                        }else{
+                            throw RuntimeException("cookie无法获得,请检查账号密码是否正确")
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+
     public suspend fun textRegister(tags: String, translated: Boolean = false,event : GroupMessageEvent): MessageChain {
         var seed = "";
         if (Config.seed == -1L){
@@ -96,23 +139,25 @@ public object Generate {
             Config.keepRandomSeeds,//false
             false,
             null,
-            "",""),fn_index=Config.textFnIndex,session_hash = randomString)
+            "",
+            ""),fn_index=Config.textFnIndex,session_hash = randomString)
 
         var request = Request.Builder().apply {
             url("${Config.stableDiffusionWebui}/api/predict/")
             post(json.encodeToString(PostData.serializer(),data).toRequestBody())
             addHeader("content-type","application/json")
+            if (cookie.isNotBlank()) addHeader("cookie",cookie)
         }.build()
         event.subject.sendMessage("请稍后,预计需要1分钟")
         var response = client.newCall(request).execute()
-        val element = json.parseToJsonElement(response.body!!.string())
+        val element = json.parseToJsonElement(response.body.string())
 
         val name = element.jsonObject["data"]?.jsonArray?.get(0)?.jsonArray?.get(0)?.jsonObject?.get("name")?.jsonPrimitive?.content
         request = Request.Builder().apply {
             url("${Config.stableDiffusionWebui}/file=$name")
         }.build()
         response = client.newCall(request).execute()
-        val byte = response.body?.bytes()
+        val byte = response.body.bytes()
 
         if (null != byte){
             val toExternalResource = byte.toExternalResource()
@@ -137,7 +182,7 @@ public object Generate {
             addHeader("content-type","application/json")
         }.build()
         val resp = client.newCall(urlRequest).execute()
-        val byteArray = resp.body?.bytes()
+        val byteArray = resp.body.bytes()
         val base64Image = "data:image/png;base64,"+Base64.getEncoder().encodeToString(byteArray)
 
 
@@ -236,16 +281,17 @@ public object Generate {
             url("${Config.stableDiffusionWebui}/api/predict/")
             post(json.encodeToString(PostData.serializer(),data).toRequestBody())
             addHeader("content-type","application/json")
+            if (cookie.isNotBlank()) addHeader("cookie",cookie)
         }.build()
         event.subject.sendMessage("请稍后,预计需要1分钟")
         var response = client.newCall(request).execute()
-        val element = json.parseToJsonElement(response.body!!.string())
+        val element = json.parseToJsonElement(response.body.string())
         val name = element.jsonObject["data"]?.jsonArray?.get(0)?.jsonArray?.get(0)?.jsonObject?.get("name")?.jsonPrimitive?.content
         request = Request.Builder().apply {
             url("${Config.stableDiffusionWebui}/file=$name")
         }.build()
         response = client.newCall(request).execute()
-        val byte = response.body?.bytes()
+        val byte = response.body.bytes()
 
         if (null != byte){
             val toExternalResource = byte.toExternalResource()

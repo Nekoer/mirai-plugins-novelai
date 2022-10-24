@@ -3,27 +3,21 @@ package com.hcyacg
 import com.hcyacg.config.Config
 import com.hcyacg.config.EhTagTranslationConfig
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.extension.PluginComponentStorage
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.load
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.pluginsDataFolder
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.pluginsDataPath
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.pluginsFolder
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.event.GlobalEventChannel
-import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.globalEventChannel
+import net.mamoe.mirai.event.subscribeFriendMessages
 import net.mamoe.mirai.event.subscribeGroupMessages
+import net.mamoe.mirai.event.subscribeGroupTempMessages
 import net.mamoe.mirai.utils.info
 
 public object Novelai : KotlinPlugin(
     JvmPluginDescription(
         id = "com.hcyacg.novelai",
         name = "novelai",
-        version = "0.7.3",
+        version = "0.7.4",
     ) {
         author("Nekoer")
     }
@@ -43,6 +37,34 @@ public object Novelai : KotlinPlugin(
 
     override fun onEnable() {
         logger.info { "Plugin loaded" }
+        Generate.loadCookie()
+
+        globalEventChannel().subscribeGroupTempMessages {
+            content { Config.owner.find { it == subject.id.toString() }?.isNotBlank() ?: false  && message.contentToString().contains("/ai username ") } quoteReply {
+                Config.username = message.contentToString().replace("/ai username ","")
+                Config.save()
+                "用户名已修改成功"
+            }
+
+            content { Config.owner.find { it == subject.id.toString() }?.isNotBlank() ?: false && message.contentToString().contains("/ai password ") } quoteReply {
+                Config.password = message.contentToString().replace("/ai password ","")
+                Config.save()
+                "密码已修改成功"
+            }
+        }
+        globalEventChannel().subscribeFriendMessages {
+            content { Config.owner.find { it == subject.id.toString() }?.isNotBlank() ?: false  && message.contentToString().contains("/ai username ") } quoteReply {
+                Config.username = message.contentToString().replace("/ai username ","")
+                Config.save()
+                "用户名已修改成功"
+            }
+
+            content { Config.owner.find { it == subject.id.toString() }?.isNotBlank() ?: false && message.contentToString().contains("/ai password ") } quoteReply {
+                Config.password = message.contentToString().replace("/ai password ","")
+                Config.save()
+                "密码已修改成功"
+            }
+        }
 
         globalEventChannel().subscribeGroupMessages  {
             content { message.contentToString().contains("/ai text ") } quoteReply {
