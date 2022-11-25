@@ -23,12 +23,12 @@ public object Config : AutoSavePluginConfig("config") {
     public var stableDiffusionWebui :String by value("http://127.0.0.1:7860")
 
     @ValueName("textFnIndex")
-    @ValueDescription("接口id")
-    public var textFnIndex:Int by value(13)
+    @ValueDescription("文字接口id")
+    public var textFnIndex:Int by value(51)
 
     @ValueName("imageFnIndex")
-    @ValueDescription("接口id")
-    public var imageFnIndex:Int by value(33)
+    @ValueDescription("图片接口id")
+    public var imageFnIndex:Int by value(74)
 
     @ValueName("mode")
     @ValueDescription("模式，仅限image2image")

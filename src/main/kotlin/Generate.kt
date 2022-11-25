@@ -5,7 +5,6 @@ import com.hcyacg.config.EhTagTranslationConfig
 import com.hcyacg.data.LocalCookieJar
 import com.hcyacg.data.PostData
 import com.hcyacg.data.TranslateResult
-import io.ktor.client.engine.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -79,6 +78,8 @@ public object Generate {
                     }
                 }
             })
+        }else{
+            logger.warning("目前还未填写您设置的webui账号密码,如果您未设置，请忽略本条消息")
         }
     }
 
@@ -129,11 +130,11 @@ public object Generate {
             Config.script,//None
             Config.putVariablePartsAtStartOfPrompt,//false
             false,
-            null,
+            false,
             "",
-            Config.xtype,
+            Config.xtype,//seed
             Config.xvalues,
-            Config.ytype,
+            Config.ytype,//nonthing
             Config.yvalues,
             Config.drawLegend,//true
             Config.keepRandomSeeds,//false
@@ -142,8 +143,9 @@ public object Generate {
             "",
             ""),fn_index=Config.textFnIndex,session_hash = randomString)
 
+
         var request = Request.Builder().apply {
-            url("${Config.stableDiffusionWebui}/api/predict/")
+            url("${Config.stableDiffusionWebui}/run/predict/")
             post(json.encodeToString(PostData.serializer(),data).toRequestBody())
             addHeader("content-type","application/json")
             if (cookie.isNotBlank()) addHeader("cookie",cookie)
@@ -151,6 +153,7 @@ public object Generate {
         event.subject.sendMessage("请稍后,预计需要1分钟")
         var response = client.newCall(request).execute()
         val element = json.parseToJsonElement(response.body.string())
+
 
         val name = element.jsonObject["data"]?.jsonArray?.get(0)?.jsonArray?.get(0)?.jsonObject?.get("name")?.jsonPrimitive?.content
         request = Request.Builder().apply {
@@ -262,7 +265,7 @@ public object Generate {
             arrayOf("left","right","up", "down"),
             false,
             false,
-            null,
+            false,
             "",
             "",
             64,
@@ -278,7 +281,7 @@ public object Generate {
             "",""),fn_index=Config.imageFnIndex,session_hash = randomString)
 
         var request = Request.Builder().apply {
-            url("${Config.stableDiffusionWebui}/api/predict/")
+            url("${Config.stableDiffusionWebui}/run/predict/")
             post(json.encodeToString(PostData.serializer(),data).toRequestBody())
             addHeader("content-type","application/json")
             if (cookie.isNotBlank()) addHeader("cookie",cookie)
